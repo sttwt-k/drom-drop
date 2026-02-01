@@ -449,9 +449,31 @@ function DormDropApp() {
   };
 
   const handleReceivePackages = async () => {
-    const targets = selectedPackage ? [selectedPackage] : selectedPackages;
+    // FIX: Determine targets correctly
+    let targets = [];
+    if (isStudentMode) {
+        // In student mode, use the selected items array
+        targets = selectedPackages;
+    } else {
+        // In admin mode, use the single selected item
+        if (selectedPackage && selectedPackage.id) {
+            targets = [selectedPackage];
+        }
+    }
 
-    if (targets.length === 0 || (!receiverName && !signatureImage)) return;
+    // Safety filter
+    targets = targets.filter(p => p && p.id);
+
+    if (targets.length === 0) {
+        alert("ไม่พบรายการพัสดุที่เลือก (โปรดลองใหม่)");
+        return;
+    }
+
+    if (!receiverName && !signatureImage) {
+        alert("กรุณาลงชื่อหรือเซ็นรับของ");
+        return;
+    }
+
     try {
         const batchUpdates = targets.map(pkg => {
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'packages', pkg.id);
@@ -518,7 +540,7 @@ function DormDropApp() {
   // Grouping for Admin List
   const getGroupedPackages = () => {
     const grouped = {};
-    const lowerSearchTerm = searchTerm.toLowerCase(); // Optimize lowercase
+    const lowerSearchTerm = searchTerm.toLowerCase();
 
     allPendingPackages.forEach(pkg => {
       if (searchBuilding !== 'ทั้งหมด' && pkg.building !== searchBuilding) return;
@@ -639,7 +661,7 @@ function DormDropApp() {
                                     <label className="block text-xs font-bold text-slate-400 mb-1 ml-2">เลขห้อง</label>
                                     <input
                                         type="text"
-                                        placeholder="เช่น A304"
+                                        placeholder="เช่น 304"
                                         value={studentSearchData.room}
                                         onChange={(e) => setStudentSearchData(p => ({...p, room: e.target.value}))}
                                         className="w-full p-4 bg-slate-50 border-none rounded-2xl text-2xl font-bold text-center tracking-widest focus:ring-2 focus:ring-indigo-500 outline-none"
