@@ -20,7 +20,7 @@ import {
   Plus, Search, Camera, Clock, CheckCircle, Box, User, X, 
   History, Home, Settings, PenTool, Eraser, Save, 
   ChevronRight, ArrowLeft, Database, Package as PackageIcon, 
-  ChevronDown, Building, Edit, AlertTriangle
+  ChevronDown, Building, Edit, AlertTriangle, CheckSquare, Square
 } from 'lucide-react';
 
 // ==========================================
@@ -37,15 +37,15 @@ const MY_FIREBASE_CONFIG = {
 };
 
 const COLOR_PALETTE = [
-  { name: 'Red', class: 'bg-red-500', text: 'text-red-600', bgSoft: 'bg-red-50' },
-  { name: 'Orange', class: 'bg-orange-500', text: 'text-orange-600', bgSoft: 'bg-orange-50' },
-  { name: 'Amber', class: 'bg-amber-400', text: 'text-amber-600', bgSoft: 'bg-amber-50' },
-  { name: 'Green', class: 'bg-green-500', text: 'text-green-600', bgSoft: 'bg-green-50' },
-  { name: 'Blue', class: 'bg-blue-500', text: 'text-blue-600', bgSoft: 'bg-blue-50' },
-  { name: 'Indigo', class: 'bg-indigo-500', text: 'text-indigo-600', bgSoft: 'bg-indigo-50' },
-  { name: 'Purple', class: 'bg-purple-500', text: 'text-purple-600', bgSoft: 'bg-purple-50' },
-  { name: 'Pink', class: 'bg-pink-500', text: 'text-pink-600', bgSoft: 'bg-pink-50' },
-  { name: 'Slate', class: 'bg-slate-500', text: 'text-slate-600', bgSoft: 'bg-slate-50' },
+  { name: 'Red', class: 'bg-red-500', text: 'text-red-600', bgSoft: 'bg-red-100' },
+  { name: 'Orange', class: 'bg-orange-500', text: 'text-orange-600', bgSoft: 'bg-orange-100' },
+  { name: 'Amber', class: 'bg-amber-400', text: 'text-amber-600', bgSoft: 'bg-amber-100' },
+  { name: 'Green', class: 'bg-green-500', text: 'text-green-600', bgSoft: 'bg-green-100' },
+  { name: 'Blue', class: 'bg-blue-500', text: 'text-blue-600', bgSoft: 'bg-blue-100' },
+  { name: 'Indigo', class: 'bg-indigo-500', text: 'text-indigo-600', bgSoft: 'bg-indigo-100' },
+  { name: 'Purple', class: 'bg-purple-500', text: 'text-purple-600', bgSoft: 'bg-purple-100' },
+  { name: 'Pink', class: 'bg-pink-500', text: 'text-pink-600', bgSoft: 'bg-pink-100' },
+  { name: 'Slate', class: 'bg-slate-500', text: 'text-slate-600', bgSoft: 'bg-slate-100' },
 ];
 
 let app, auth, db;
@@ -233,16 +233,6 @@ const CarrierBadge = ({ carrier }) => {
       <span className={`text-[10px] px-2 py-1 rounded-md font-bold shadow-sm tracking-wide ${colors[carrierName] || colors['อื่นๆ']}`}>
         {carrierName.toUpperCase()}
       </span>
-    );
-};
-
-const BuildingBadge = ({ buildingName, config }) => {
-    const buildConf = config?.buildings?.find(b => b.name === buildingName);
-    const colorClass = buildConf ? COLOR_PALETTE.find(c => c.name === buildConf.color)?.class : 'bg-slate-500';
-    return (
-        <span className={`${colorClass || 'bg-slate-500'} text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-bold`}>
-            {buildingName || 'ไม่ระบุ'}
-        </span>
     );
 };
 
@@ -449,14 +439,16 @@ function DormDropApp() {
   };
 
   const handleReceivePackages = async () => {
-    // FIX: Determine targets correctly
+    // Determine targets correctly
     let targets = [];
     if (isStudentMode) {
         // In student mode, use the selected items array
         targets = selectedPackages;
     } else {
-        // In admin mode, use the single selected item
-        if (selectedPackage && selectedPackage.id) {
+        // In admin mode, prefer multiple selected packages, fallback to single selectedPackage
+        if (selectedPackages.length > 0) {
+            targets = selectedPackages;
+        } else if (selectedPackage && selectedPackage.id) {
             targets = [selectedPackage];
         }
     }
@@ -465,7 +457,7 @@ function DormDropApp() {
     targets = targets.filter(p => p && p.id);
 
     if (targets.length === 0) {
-        alert("ไม่พบรายการพัสดุที่เลือก (โปรดลองใหม่)");
+        alert("ไม่พบรายการพัสดุที่เลือก");
         return;
     }
 
@@ -1010,10 +1002,9 @@ function DormDropApp() {
                    const pkgs = groupedPackages[key];
                    
                    return (
-                   <div key={key} onClick={() => { setSelectedRoomGroup({building: bName, room: rNum}); setView('roomDetail'); }} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-all cursor-pointer group hover:border-indigo-100 relative overflow-hidden">
+                   <div key={key} onClick={() => { setSelectedRoomGroup({building: bName, room: rNum}); setView('roomDetail'); setSelectedPackages([]); }} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-all cursor-pointer group hover:border-indigo-100 relative overflow-hidden">
                       <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getBuildingColorClass(bName)}`}></div>
                       <div className="flex items-center gap-4 pl-3">
-                          {/* UPDATED: Building Icon UI */}
                           <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shadow-sm font-bold text-lg ${getBuildingColorClass(bName, 'soft')} ${bName ? '' : 'bg-slate-100 text-slate-500'}`}>
                                {bName ? (
                                    <>
@@ -1025,7 +1016,7 @@ function DormDropApp() {
                                )}
                           </div>
                           <div>
-                              <div className="flex items-center gap-2 mb-0.5"><span className="text-sm text-slate-500 font-medium">ห้อง</span>{bName && <BuildingBadge buildingName={bName} config={config} />}</div>
+                              <div className="flex items-center gap-2 mb-0.5"><span className="text-sm text-slate-500 font-medium">ห้อง</span></div>
                               <div className="text-2xl font-extrabold text-slate-800 flex items-baseline gap-1 leading-none">{rNum}</div>
                               <div className="text-[10px] text-slate-400 mt-1">{pkgs.length} พัสดุรอรับ</div>
                           </div>
@@ -1037,10 +1028,24 @@ function DormDropApp() {
             </div>
           )}
 
-          {/* ROOM DETAIL */}
+          {/* ROOM DETAIL (ADMIN) */}
           {view === 'roomDetail' && selectedRoomGroup && (
-             <div className="space-y-4 animate-fade-in pb-20">
-                <button onClick={() => { setView('list'); setSelectedRoomGroup(null); }} className="flex items-center gap-1 text-slate-500 mb-2 hover:text-indigo-600 font-medium text-sm pl-1"><ArrowLeft className="w-4 h-4" /> กลับหน้ารวม</button>
+             <div className="space-y-4 animate-fade-in pb-24 relative min-h-[80vh]">
+                <div className="flex justify-between items-center mb-2">
+                    <button onClick={() => { setView('list'); setSelectedRoomGroup(null); }} className="flex items-center gap-1 text-slate-500 hover:text-indigo-600 font-medium text-sm pl-1"><ArrowLeft className="w-4 h-4" /> กลับหน้ารวม</button>
+                    {packagesInSelectedGroup.length > 0 && (
+                        <button 
+                            onClick={() => {
+                                if (selectedPackages.length === packagesInSelectedGroup.length) setSelectedPackages([]);
+                                else setSelectedPackages(packagesInSelectedGroup);
+                            }} 
+                            className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full"
+                        >
+                            {selectedPackages.length === packagesInSelectedGroup.length ? 'ยกเลิกเลือก' : 'เลือกทั้งหมด'}
+                        </button>
+                    )}
+                </div>
+                
                 <div className={`rounded-2xl p-4 text-white shadow-lg flex items-center justify-between mb-4 ${getBuildingColorClass(selectedRoomGroup.building, 'class')}`}>
                     <div className="flex items-center gap-3">
                         <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm"><Home className="w-6 h-6 text-white" /></div>
@@ -1049,31 +1054,59 @@ function DormDropApp() {
                     <div className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold border border-white/10">{packagesInSelectedGroup.length} รายการ</div>
                 </div>
 
-                <div className="space-y-3">
-                   {packagesInSelectedGroup.map(pkg => (
-                      <div key={pkg.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-4 relative">
-                        {/* Edit Button */}
-                        <button onClick={(e) => { e.stopPropagation(); handleEditClick(pkg); }} className="absolute top-3 right-3 p-2 bg-slate-50 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
-                            <Edit className="w-4 h-4" />
+                <div className="space-y-3 pb-16">
+                   {packagesInSelectedGroup.map(pkg => {
+                      const isSelected = selectedPackages.some(p => p.id === pkg.id);
+                      return (
+                      <div 
+                        key={pkg.id} 
+                        onClick={() => {
+                            if (isSelected) setSelectedPackages(prev => prev.filter(p => p.id !== pkg.id));
+                            else setSelectedPackages(prev => [...prev, pkg]);
+                        }}
+                        className={`bg-white p-4 rounded-2xl shadow-sm border transition-all flex flex-col gap-4 relative cursor-pointer ${isSelected ? 'border-indigo-500 ring-1 ring-indigo-500 bg-indigo-50/30' : 'border-slate-100'}`}
+                      >
+                        {/* Selection Indicator */}
+                        <div className={`absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-200 bg-white'}`}>
+                            {isSelected && <CheckCircle className="w-4 h-4 text-white" />}
+                        </div>
+
+                        {/* Edit Button (Stop Propagation to prevent selection toggle) */}
+                        <button onClick={(e) => { e.stopPropagation(); handleEditClick(pkg); }} className="absolute top-4 right-12 p-1.5 bg-white border border-slate-100 rounded-full text-slate-400 hover:text-indigo-600 hover:border-indigo-200 z-10">
+                            <Edit className="w-3.5 h-3.5" />
                         </button>
 
                         <div className="flex gap-4">
                             <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-100 relative">
                                 {pkg.image ? <img src={pkg.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><PackageIcon className="w-8 h-8" /></div>}
                             </div>
-                            <div className="flex-1 min-w-0 pr-8">
+                            <div className="flex-1 min-w-0 pr-16">
                                 <div className="flex items-center gap-2 mb-1"><CarrierBadge carrier={pkg.carrier} /><span className="text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{pkg.type}</span></div>
                                 <h3 className="font-bold text-slate-800 text-lg truncate mb-0.5">{pkg.tracking}</h3>
                                 {pkg.sender && <p className="text-xs text-slate-500">จาก: <span className="font-medium text-slate-700">{pkg.sender}</span></p>}
                             </div>
                         </div>
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-50/50">
                             <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-md"><Clock className="w-3.5 h-3.5" /> {pkg.createdAt instanceof Date ? pkg.createdAt.toLocaleDateString('th-TH') : '...'}</div>
-                            <button onClick={() => { setSelectedPackages([pkg]); setSelectedPackage(pkg); }} className="px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-md shadow-indigo-200 active:scale-95 transition-all flex items-center gap-1.5 hover:bg-indigo-700"><CheckCircle className="w-4 h-4" /> รับของ</button>
                         </div>
                       </div>
-                   ))}
+                   )})}
                 </div>
+
+                {/* Bulk Receive Bar */}
+                {selectedPackages.length > 0 && (
+                    <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] max-w-md mx-auto animate-slide-up z-30">
+                        <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm font-bold text-slate-600">เลือกแล้ว {selectedPackages.length} ชิ้น</span>
+                        </div>
+                        <button 
+                            onClick={() => setSelectedPackage({})} // Trigger modal
+                            className="w-full py-4 bg-green-500 text-white rounded-2xl font-bold shadow-lg shadow-green-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+                        >
+                            <CheckCircle className="w-5 h-5" /> ยืนยันรับพัสดุ ({selectedPackages.length})
+                        </button>
+                    </div>
+                )}
              </div>
           )}
 
@@ -1101,11 +1134,11 @@ function DormDropApp() {
           )}
         </div>
 
-        {/* Receive Modal (Admin) */}
+        {/* Receive Modal (Shared) */}
         {selectedPackage && view !== 'studentResult' && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4">
             <div className="bg-white w-full max-w-sm rounded-t-3xl md:rounded-3xl p-6 shadow-2xl animate-slide-up">
-              <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><CheckCircle className="w-6 h-6 text-green-500" /> รับของ</h3><button onClick={() => { setSelectedPackage(null); setSignatureImage(null); }} className="p-2 bg-slate-100 rounded-full"><X className="w-5 h-5 text-slate-500" /></button></div>
+              <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><CheckCircle className="w-6 h-6 text-green-500" /> รับของ ({selectedPackages.length} ชิ้น)</h3><button onClick={() => { setSelectedPackage(null); setSignatureImage(null); }} className="p-2 bg-slate-100 rounded-full"><X className="w-5 h-5 text-slate-500" /></button></div>
               <div className="space-y-4 mb-6">
                 <div><label className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">ชื่อผู้รับ</label><input type="text" placeholder="พิมพ์ชื่อผู้รับ..." className="w-full p-3 bg-white border-2 border-slate-100 rounded-xl focus:border-indigo-500 outline-none" value={receiverName} onChange={(e) => setReceiverName(e.target.value)} /></div>
                 <div><label className="text-xs font-bold text-slate-500 uppercase mb-1.5 block">ลายเซ็น</label><SignaturePad onSave={setSignatureImage} /></div>
