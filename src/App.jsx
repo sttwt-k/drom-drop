@@ -236,6 +236,16 @@ const CarrierBadge = ({ carrier }) => {
     );
 };
 
+const BuildingBadge = ({ buildingName, config }) => {
+    const buildConf = config?.buildings?.find(b => b.name === buildingName);
+    const colorClass = buildConf ? COLOR_PALETTE.find(c => c.name === buildConf.color)?.class : 'bg-slate-500';
+    return (
+        <span className={`${colorClass || 'bg-slate-500'} text-white text-[10px] px-2 py-0.5 rounded shadow-sm font-bold`}>
+            {buildingName || 'ไม่ระบุ'}
+        </span>
+    );
+};
+
 // ==========================================
 // 2. MAIN APP
 // ==========================================
@@ -609,7 +619,11 @@ function DormDropApp() {
   // ==========================================
   if (isStudentMode) {
       return (
-        <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
+        <div className="min-h-screen bg-slate-100 text-slate-800" style={{ fontFamily: "'Kanit', sans-serif" }}>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+                * { font-family: 'Kanit', sans-serif; }
+            `}</style>
             <div className="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative flex flex-col">
                 {/* Student Header */}
                 <div className="bg-white/90 backdrop-blur-sm p-5 shadow-sm sticky top-0 z-10 flex justify-between items-center">
@@ -653,7 +667,7 @@ function DormDropApp() {
                                     <label className="block text-xs font-bold text-slate-400 mb-1 ml-2">เลขห้อง</label>
                                     <input
                                         type="text"
-                                        placeholder="เช่น 304"
+                                        placeholder="เช่น A1, K2, Q3..."
                                         value={studentSearchData.room}
                                         onChange={(e) => setStudentSearchData(p => ({...p, room: e.target.value}))}
                                         className="w-full p-4 bg-slate-50 border-none rounded-2xl text-2xl font-bold text-center tracking-widest focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -776,7 +790,11 @@ function DormDropApp() {
   // ==========================================
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-800 pb-24 md:pb-0">
+    <div className="min-h-screen bg-slate-100 text-slate-800 pb-24 md:pb-0" style={{ fontFamily: "'Kanit', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        * { font-family: 'Kanit', sans-serif; }
+      `}</style>
       <div className="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header */}
@@ -1005,6 +1023,7 @@ function DormDropApp() {
                    <div key={key} onClick={() => { setSelectedRoomGroup({building: bName, room: rNum}); setView('roomDetail'); setSelectedPackages([]); }} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-all cursor-pointer group hover:border-indigo-100 relative overflow-hidden">
                       <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getBuildingColorClass(bName)}`}></div>
                       <div className="flex items-center gap-4 pl-3">
+                          {/* UPDATED: Building Icon UI */}
                           <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center shadow-sm font-bold text-lg ${getBuildingColorClass(bName, 'soft')} ${bName ? '' : 'bg-slate-100 text-slate-500'}`}>
                                {bName ? (
                                    <>
